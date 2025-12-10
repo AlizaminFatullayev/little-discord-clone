@@ -4,7 +4,6 @@ import { ChatArea } from './components/ChatArea';
 import { User, Server, Channel, Message } from './types';
 import { generateBotResponse } from './services/geminiService';
 
-// --- Mock Data ---
 const MOCK_USER: User = {
   id: 'u1',
   username: 'Developer',
@@ -42,7 +41,6 @@ const INITIAL_SERVERS: Server[] = [
   }
 ];
 
-// Initial Messages to populate the view
 const INITIAL_MESSAGES: Record<string, Message[]> = {
   'c1': [
     { id: 'm1', content: 'Welcome to the server!', channelId: 'c1', sender: GEMINI_BOT, timestamp: Date.now() - 100000 },
@@ -59,15 +57,12 @@ const App: React.FC = () => {
   const [users, setUsers] = useState<User[]>([MOCK_USER, GEMINI_BOT, { id: 'u3', username: 'Guest', avatar: 'https://picsum.photos/200?random=3', status: 'idle' }]);
   const [isBotTyping, setIsBotTyping] = useState(false);
 
-  // Derived state
   const activeServer = INITIAL_SERVERS.find(s => s.id === activeServerId) || INITIAL_SERVERS[0];
   const activeChannel = activeServer.channels.find(c => c.id === activeChannelId) || activeServer.channels[0];
   const currentChannelMessages = messages[activeChannelId] || [];
 
-  // Handlers
   const handleServerClick = (id: string) => {
     setActiveServerId(id);
-    // Default to first channel of new server
     const server = INITIAL_SERVERS.find(s => s.id === id);
     if (server && server.channels.length > 0) {
       setActiveChannelId(server.channels[0].id);
@@ -87,29 +82,23 @@ const App: React.FC = () => {
       timestamp: Date.now(),
     };
 
-    // Optimistic Update
     setMessages(prev => ({
       ...prev,
       [activeChannelId]: [...(prev[activeChannelId] || []), newMessage]
     }));
 
-    // Check for Bot Trigger
-    // Trigger if in #ask-gemini OR if mentioned
     const isAiChannel = activeChannel.name === 'ask-gemini';
     const isMentioned = content.toLowerCase().includes('@gem');
     
     if (isAiChannel || isMentioned) {
       setIsBotTyping(true);
       
-      // Simulate network delay for realism
-      // In a real Node.js backend, this would be the server processing time
       try {
         const history = currentChannelMessages.map(m => ({
           role: m.sender.isBot ? 'model' : 'user',
           parts: [{ text: m.content }]
         }));
         
-        // Add current message to history context
         history.push({ role: 'user', parts: [{ text: content }] });
 
         const botReplyText = await generateBotResponse(content, history);
@@ -136,7 +125,6 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden font-sans">
-      {/* 1. Server Rail */}
       <nav className="flex-shrink-0 z-20">
         <ServerRail 
           servers={INITIAL_SERVERS} 
@@ -145,7 +133,6 @@ const App: React.FC = () => {
         />
       </nav>
 
-      {/* 2. Channel Sidebar */}
       <div className="flex-shrink-0 z-10 hidden md:block">
         <ChannelSidebar 
           server={activeServer} 
@@ -155,7 +142,6 @@ const App: React.FC = () => {
         />
       </div>
 
-      {/* 3. Main Chat Area */}
       <main className="flex-1 flex min-w-0 bg-discord-chat relative z-0">
         <ChatArea 
           channel={activeChannel} 
@@ -164,14 +150,10 @@ const App: React.FC = () => {
           isLoading={isBotTyping}
         />
 
-        {/* 4. Member List (Right Sidebar) */}
         <aside className="border-l border-black/10 hidden lg:block">
           <MemberList users={users} />
         </aside>
       </main>
-      
-      {/* Mobile Overlay for Channels (Optional simplified version for mobile responsiveness) */}
-      {/* In a full app, we would add a hamburger menu to toggle the sidebar on mobile */}
     </div>
   );
 };
