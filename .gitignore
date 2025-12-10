@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vercel
+.env*.local
+
+# Keep only App.tsx
+index.html
+index.tsx
+metadata.json
+package.json
+package-lock.json
+tsconfig.json
+types.ts
+vite.config.ts
+README.md
+components/
+services/
